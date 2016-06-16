@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 my $sshDir = "$ENV{HOME}/.ssh";
-my $host = `raspi`;
+my $host = `chip`;
 chomp $host;
 
 sub run(@){
