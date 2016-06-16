@@ -18,7 +18,7 @@ sub keygen($){
   my $user = shift;
   my $group = $user eq 'user' ? 'users' : $user;
 
-  run 'ssh', "$user\@$host", "
+  run "ssh", "-t", "$user\@$host", "
     set -x
     mkdir -p ~/.ssh
     chmod go-w ~/.ssh
@@ -33,7 +33,7 @@ sub keygen($){
 #copies the local pub keys and authorizes them {remote=>local}
 sub keyCopy($){
   run "scp $sshDir/*.pub $_[0]\@$host:~/.ssh";
-  run 'ssh', "$_[0]\@$host", "cat ~/.ssh/*.pub > ~/.ssh/authorized_keys";
+  run "ssh", "-t", "$_[0]\@$host", "cat ~/.ssh/*.pub > ~/.ssh/authorized_keys";
 }
 
 sub main(@){
@@ -42,12 +42,12 @@ sub main(@){
   run 'rm', "-f", "$sshDir/$host.pub";
   print "default password is raspberry\n";
   print "\n\npasswd $defaultUser\n";
-  run 'ssh', "$defaultUser\@$host", "sudo passwd $defaultUser";
+  run "ssh", "-t", "$defaultUser\@$host", "sudo passwd $defaultUser";
   print "\n\npasswd root\n";
-  run 'ssh', "$defaultUser\@$host", "sudo passwd root";
+  run "ssh", "-t", "$defaultUser\@$host", "sudo passwd root";
 
   print "permit root login on ssh\n";
-  run 'ssh', "$defaultUser\@$host", "
+  run 'ssh', "-t", "$defaultUser\@$host", "
     echo -ne '\\nchanging PermitRootLogin in sshd_config\\n\\n'
     echo -ne 'OLD: '
     grep '^PermitRootLogin ' /etc/ssh/sshd_config
@@ -58,7 +58,7 @@ sub main(@){
 
 
   print "\n\nrestarting ssh\n";
-  run 'ssh', "$defaultUser\@$host", "sudo service ssh restart &";
+  run "ssh", "-t", "$defaultUser\@$host", "sudo service ssh restart &";
 
   my $ok = 0;
   my $delay = 3;
