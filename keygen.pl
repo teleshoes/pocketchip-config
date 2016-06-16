@@ -5,6 +5,7 @@ use warnings;
 my $sshDir = "$ENV{HOME}/.ssh";
 my $host = `chip`;
 chomp $host;
+my $defaultUser = "chip";
 
 sub run(@){
   print "@_\n";
@@ -40,13 +41,13 @@ sub main(@){
 
   run 'rm', "-f", "$sshDir/$host.pub";
   print "default password is raspberry\n";
-  print "\n\npasswd pi\n";
-  run 'ssh', "pi\@$host", 'sudo passwd pi';
+  print "\n\npasswd $defaultUser\n";
+  run 'ssh', "$defaultUser\@$host", "sudo passwd $defaultUser";
   print "\n\npasswd root\n";
-  run 'ssh', "pi\@$host", 'sudo passwd root';
+  run 'ssh', "$defaultUser\@$host", "sudo passwd root";
 
   print "permit root login on ssh\n";
-  run 'ssh', "pi\@$host", "
+  run 'ssh', "$defaultUser\@$host", "
     echo -ne '\\nchanging PermitRootLogin in sshd_config\\n\\n'
     echo -ne 'OLD: '
     grep '^PermitRootLogin ' /etc/ssh/sshd_config
@@ -57,13 +58,13 @@ sub main(@){
 
 
   print "\n\nrestarting ssh\n";
-  run 'ssh', "pi\@$host", "sudo service ssh restart &";
+  run 'ssh', "$defaultUser\@$host", "sudo service ssh restart &";
 
   my $ok = 0;
   my $delay = 3;
   my $attempts = 5;
   while(not $ok){
-    my $sshIsUp = `ssh pi\@$host echo ssh-is-up`;
+    my $sshIsUp = `ssh $defaultUser\@$host echo ssh-is-up`;
     $attempts--;
     chomp $sshIsUp;
     if($sshIsUp eq "ssh-is-up"){
@@ -79,10 +80,10 @@ sub main(@){
   }
 
 
-  keygen 'root';
-  keygen 'pi';
-  keyCopy 'root';
-  keyCopy 'pi';
+  keygen "root";
+  keygen "$defaultUser";
+  keyCopy "root";
+  keyCopy "$defaultUser";
 
   run "cat $sshDir/*.pub > $sshDir/authorized_keys";
 }
